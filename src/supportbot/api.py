@@ -52,12 +52,12 @@ class ServiceState:
         self.escalations = 0
         self.query_log: list[dict] = []  # newest last, capped at QUERY_LOG_SIZE
 
-    def log_query(
-        self, session_id: str, message: str, response: ChatResponse
-    ) -> None:
-        preview = message if len(message) <= QUERY_PREVIEW_CHARS else message[
-            :QUERY_PREVIEW_CHARS
-        ].rstrip() + "…"
+    def log_query(self, session_id: str, message: str, response: ChatResponse) -> None:
+        preview = (
+            message
+            if len(message) <= QUERY_PREVIEW_CHARS
+            else message[:QUERY_PREVIEW_CHARS].rstrip() + "…"
+        )
         self.query_log.append(
             {
                 "session_id": session_id,

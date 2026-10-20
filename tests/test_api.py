@@ -92,10 +92,10 @@ def test_stats_escalation_rate(client):
 
 def test_stats_has_deflection_and_notes(client):
     client.post("/v1/chat", json={"session_id": "s1", "message": "how is billing charged?"})
-    client.post("/v1/chat", json={"session_id": "s2", "message": "what is the ceo's favorite food?"})
     client.post(
-        "/v1/feedback", json={"session_id": "s1", "helpful": False, "note": "wrong answer"}
+        "/v1/chat", json={"session_id": "s2", "message": "what is the ceo's favorite food?"}
     )
+    client.post("/v1/feedback", json={"session_id": "s1", "helpful": False, "note": "wrong answer"})
     stats = client.get("/v1/stats").json()
     assert stats["queries"] == 2
     assert stats["escalations"] == 1
