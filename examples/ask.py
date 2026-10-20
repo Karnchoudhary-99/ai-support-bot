@@ -10,9 +10,9 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src"))
 
-from supportbot.bot import SupportBot  # noqa: E402
-from supportbot.memory import ConversationStore  # noqa: E402
-from supportbot.store import CorpusStore  # noqa: E402
+from supportbot.bot import SupportBot
+from supportbot.memory import ConversationStore
+from supportbot.store import CorpusStore
 
 QUESTIONS = [
     "How do I deploy my first project?",
