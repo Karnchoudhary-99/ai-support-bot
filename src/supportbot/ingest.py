@@ -102,14 +102,10 @@ def ingest_markdown(
     """Parse one markdown/text file into a Document (unchunked)."""
     metadata, body = parse_front_matter(raw)
     title = metadata.get("title") or default_title or doc_id
-    return Document(
-        doc_id=doc_id, title=title, source=source, text=body, metadata=metadata
-    )
+    return Document(doc_id=doc_id, title=title, source=source, text=body, metadata=metadata)
 
 
-def chunk_document(
-    doc: Document, max_chars: int = 800, overlap: int = 120
-) -> list[Chunk]:
+def chunk_document(doc: Document, max_chars: int = 800, overlap: int = 120) -> list[Chunk]:
     """Cut a Document into section-aware Chunks."""
     chunks: list[Chunk] = []
     index = 0

@@ -18,9 +18,7 @@ def _jaccard(a: set[str], b: set[str]) -> float:
     return len(a & b) / len(a | b)
 
 
-def mmr(
-    results: list[RetrievalResult], k: int, lambda_: float = 0.5
-) -> list[RetrievalResult]:
+def mmr(results: list[RetrievalResult], k: int, lambda_: float = 0.5) -> list[RetrievalResult]:
     """Re-rank with Maximal Marginal Relevance.
 
     score = lambda_ * relevance - (1 - lambda_) * max_similarity_to_selected
@@ -40,9 +38,7 @@ def mmr(
         for i in remaining:
             relevance = results[i].score
             if selected:
-                redundancy = max(
-                    _jaccard(token_sets[i], token_sets[s]) for s in selected
-                )
+                redundancy = max(_jaccard(token_sets[i], token_sets[s]) for s in selected)
             else:
                 redundancy = 0.0
             mmr_score = lambda_ * relevance - (1.0 - lambda_) * redundancy

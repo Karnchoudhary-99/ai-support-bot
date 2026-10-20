@@ -1,5 +1,7 @@
 """Tests for ingestion: front-matter, sections, chunking, directory ingest."""
 
+import itertools
+
 import pytest
 
 from supportbot.ingest import (
@@ -50,7 +52,7 @@ def test_chunk_text_respects_max_chars_and_overlaps():
     assert len(chunks) > 2
     assert all(len(c) <= 60 for c in chunks)
     # overlap: consecutive chunks share words
-    for a, b in zip(chunks, chunks[1:]):
+    for a, b in itertools.pairwise(chunks):
         assert set(a.split()) & set(b.split())
 
 

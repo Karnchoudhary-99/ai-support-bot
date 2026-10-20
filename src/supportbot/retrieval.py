@@ -19,12 +19,73 @@ _TOKEN_RE = re.compile(r"[a-z0-9]+")
 
 # Small built-in stopword list: keeps the index lean without NLTK.
 STOPWORDS = frozenset(
-    """
-    a an and are as at be been but by can did do does for from had has have
-    he her his how i if in into is it its me my not of on or our out over
-    said she so that the their them then there these they this to was we
-    were what when where which who will with would you your
-    """.split()
+    [
+        "a",
+        "an",
+        "and",
+        "are",
+        "as",
+        "at",
+        "be",
+        "been",
+        "but",
+        "by",
+        "can",
+        "did",
+        "do",
+        "does",
+        "for",
+        "from",
+        "had",
+        "has",
+        "have",
+        "he",
+        "her",
+        "his",
+        "how",
+        "i",
+        "if",
+        "in",
+        "into",
+        "is",
+        "it",
+        "its",
+        "me",
+        "my",
+        "not",
+        "of",
+        "on",
+        "or",
+        "our",
+        "out",
+        "over",
+        "said",
+        "she",
+        "so",
+        "that",
+        "the",
+        "their",
+        "them",
+        "then",
+        "there",
+        "these",
+        "they",
+        "this",
+        "to",
+        "was",
+        "we",
+        "were",
+        "what",
+        "when",
+        "where",
+        "which",
+        "who",
+        "will",
+        "with",
+        "would",
+        "you",
+        "your",
+    ]
 )
 
 
@@ -106,10 +167,7 @@ class TfidfIndex:
             if score > 0.0:
                 scored.append((score, i))
         scored.sort(key=lambda s: s[0], reverse=True)
-        return [
-            RetrievalResult(chunk=self.chunks[i], score=score)
-            for score, i in scored[:k]
-        ]
+        return [RetrievalResult(chunk=self.chunks[i], score=score) for score, i in scored[:k]]
 
 
 class Retriever:

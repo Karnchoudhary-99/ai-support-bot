@@ -7,8 +7,8 @@ and admin analytics — built so every layer is observable and testable.
 ## Roadmap
 
 - [x] Project scaffold (layout, README, CI)
-- [ ] Document ingestion: markdown/PDF/web -> chunked corpus with metadata
-- [ ] Embeddings + vector retrieval (bring your own embedder)
+- [x] Document ingestion: markdown/text -> chunked corpus with metadata
+- [x] TF-IDF retrieval + MMR rerank (bring-your-own `Embedder` protocol)
 - [ ] FastAPI service: `POST /v1/chat` (streaming SSE), sessions, citations
 - [ ] Conversation memory with token-budgeted history
 - [ ] Eval harness: groundedness + faithfulness scoring on a gold set

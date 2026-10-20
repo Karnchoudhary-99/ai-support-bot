@@ -5,7 +5,7 @@ import pytest
 from supportbot.ingest import ingest_markdown
 from supportbot.models import Chunk, RetrievalResult
 from supportbot.rerank import mmr
-from supportbot.store import STORE_VERSION, CorpusStore
+from supportbot.store import CorpusStore
 
 
 def _res(cid: str, text: str, score: float) -> RetrievalResult:

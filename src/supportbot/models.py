@@ -8,12 +8,12 @@ trivially testable and embeddable.
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 
 def utcnow() -> datetime:
     """Timezone-aware now, used as the default timestamp factory."""
-    return datetime.now(timezone.utc)
+    return datetime.now(UTC)
 
 
 @dataclass
