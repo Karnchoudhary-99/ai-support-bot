@@ -26,6 +26,8 @@ from .models import ChatResponse, FeedbackEvent
 from .store import CorpusStore
 
 DEFAULT_CORPUS = Path(__file__).resolve().parent.parent.parent / "examples" / "corpus"
+QUERY_LOG_SIZE = 200  # ring buffer: last N queries, for /v1/logs
+QUERY_PREVIEW_CHARS = 120  # truncate query text in the log
 
 
 class ChatBody(BaseModel):
@@ -48,6 +50,25 @@ class ServiceState:
         self.feedback: list[FeedbackEvent] = []
         self.queries = 0
         self.escalations = 0
+        self.query_log: list[dict] = []  # newest last, capped at QUERY_LOG_SIZE
+
+    def log_query(self, session_id: str, message: str, response: ChatResponse) -> None:
+        preview = (
+            message
+            if len(message) <= QUERY_PREVIEW_CHARS
+            else message[:QUERY_PREVIEW_CHARS].rstrip() + "…"
+        )
+        self.query_log.append(
+            {
+                "session_id": session_id,
+                "query": preview,
+                "escalated": response.escalated,
+                "confidence": response.confidence,
+                "citations": len(response.citations),
+            }
+        )
+        if len(self.query_log) > QUERY_LOG_SIZE:
+            del self.query_log[: len(self.query_log) - QUERY_LOG_SIZE]
 
 
 def _response_to_dict(response: ChatResponse) -> dict:
@@ -90,6 +111,7 @@ def create_app(corpus_dir: str | Path | None = None) -> FastAPI:
         response = state.bot.ask(body.session_id, body.message, top_k=body.top_k)
         if response.escalated:
             state.escalations += 1
+        state.log_query(body.session_id, body.message, response)
         return _response_to_dict(response)
 
     @app.post("/v1/chat/stream")
@@ -98,6 +120,7 @@ def create_app(corpus_dir: str | Path | None = None) -> FastAPI:
         response = state.bot.ask(body.session_id, body.message, top_k=body.top_k)
         if response.escalated:
             state.escalations += 1
+        state.log_query(body.session_id, body.message, response)
 
         async def events() -> AsyncIterator[str]:
             for word in response.answer.split():
@@ -118,15 +141,25 @@ def create_app(corpus_dir: str | Path | None = None) -> FastAPI:
     @app.get("/v1/stats")
     def stats() -> dict:
         helpful = sum(1 for f in state.feedback if f.helpful)
+        noted = sum(1 for f in state.feedback if f.note)
+        escalation_rate = round(state.escalations / max(1, state.queries), 4)
         return {
             "queries": state.queries,
             "escalations": state.escalations,
-            "escalation_rate": round(state.escalations / max(1, state.queries), 4),
+            "escalation_rate": escalation_rate,
+            "deflection_rate": round(1.0 - escalation_rate, 4),
             "feedback_total": len(state.feedback),
             "feedback_helpful_rate": round(helpful / max(1, len(state.feedback)), 4),
+            "feedback_with_notes": noted,
             "active_sessions": len(state.bot.memory.session_ids()),
             "chunks": len(state.store),
         }
+
+    @app.get("/v1/logs")
+    def logs(limit: int = 20) -> dict:
+        """Recent queries for admin review (newest first)."""
+        limit = max(1, min(limit, QUERY_LOG_SIZE))
+        return {"total": len(state.query_log), "logs": list(reversed(state.query_log[-limit:]))}
 
     return app
 

@@ -88,3 +88,35 @@ def test_stats_escalation_rate(client):
     assert stats["queries"] == 2
     assert stats["escalations"] == 1
     assert stats["escalation_rate"] == 0.5
+
+
+def test_stats_has_deflection_and_notes(client):
+    client.post("/v1/chat", json={"session_id": "s1", "message": "how is billing charged?"})
+    client.post(
+        "/v1/chat", json={"session_id": "s2", "message": "what is the ceo's favorite food?"}
+    )
+    client.post("/v1/feedback", json={"session_id": "s1", "helpful": False, "note": "wrong answer"})
+    stats = client.get("/v1/stats").json()
+    assert stats["queries"] == 2
+    assert stats["escalations"] == 1
+    assert stats["escalation_rate"] == 0.5
+    assert stats["deflection_rate"] == 0.5
+    assert stats["feedback_with_notes"] == 1
+
+
+def test_logs_records_queries_newest_first(client):
+    client.post("/v1/chat", json={"session_id": "s1", "message": "how is billing charged?"})
+    client.post("/v1/chat", json={"session_id": "s1", "message": "how do I deploy?"})
+    body = client.get("/v1/logs?limit=10").json()
+    assert body["total"] == 2
+    assert body["logs"][0]["query"] == "how do I deploy?"
+    assert body["logs"][1]["query"] == "how is billing charged?"
+    assert all("escalated" in entry and "confidence" in entry for entry in body["logs"])
+
+
+def test_logs_truncates_long_queries(client):
+    long_q = "deploy " * 100
+    client.post("/v1/chat", json={"session_id": "s1", "message": long_q})
+    entry = client.get("/v1/logs?limit=1").json()["logs"][0]
+    assert len(entry["query"]) <= 121  # 120 chars + ellipsis
+    assert entry["query"].endswith("…")

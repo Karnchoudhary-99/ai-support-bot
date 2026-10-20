@@ -1,0 +1,15 @@
+# One-command demo: API on localhost:8000 backed by the bundled sample corpus.
+#
+#   docker compose up --build
+#
+# Serve your own docs (a host dir of .md/.txt files) with an explicit mount —
+# SUPPORTBOT_CORPUS defaults to /app/corpus inside the image:
+#
+#   docker compose up --build -v ./my-docs:/app/corpus:ro
+services:
+  api:
+    build: .
+    image: supportbot:latest
+    ports:
+      - "8000:8000"
+    restart: unless-stopped
