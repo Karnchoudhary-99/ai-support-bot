@@ -84,9 +84,7 @@ class SupportBot:
         else:
             response = self._compose(session_id, message, query_terms, results)
 
-        self.memory.add_message(
-            session_id, ChatMessage(role="assistant", content=response.answer)
-        )
+        self.memory.add_message(session_id, ChatMessage(role="assistant", content=response.answer))
         return response
 
     def _compose(
