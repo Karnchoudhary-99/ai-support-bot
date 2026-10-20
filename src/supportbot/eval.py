@@ -180,8 +180,12 @@ def main(argv: list[str] | None = None) -> int:
     gold_path = Path(args.gold) if args.gold else _default_gold()
     cases = load_gold_set(gold_path)
     corpus = Path(args.corpus) if args.corpus else None
-    store = CorpusStore.from_directory(corpus) if corpus else CorpusStore.from_directory(
-        Path(__file__).resolve().parent.parent.parent / "examples" / "corpus"
+    store = (
+        CorpusStore.from_directory(corpus)
+        if corpus
+        else CorpusStore.from_directory(
+            Path(__file__).resolve().parent.parent.parent / "examples" / "corpus"
+        )
     )
     bot = SupportBot(store, ConversationStore())
     report = run_eval(bot, cases)
@@ -193,14 +197,15 @@ def main(argv: list[str] | None = None) -> int:
     failures = [
         r
         for r in report.results
-        if not r.escalation_correct
-        or (not r.response.escalated and r.citation_precision < 1.0)
+        if not r.escalation_correct or (not r.response.escalated and r.citation_precision < 1.0)
     ]
     if failures:
         print(f"\n{len(failures)} imperfect case(s):")
         for r in failures:
-            print(f"  - {r.case.question[:70]!r} precision={r.citation_precision} "
-                  f"escalated={r.response.escalated}")
+            print(
+                f"  - {r.case.question[:70]!r} precision={r.citation_precision} "
+                f"escalated={r.response.escalated}"
+            )
     return 0 if report.groundedness >= 0.5 else 1
 
 
