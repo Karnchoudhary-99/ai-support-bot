@@ -12,9 +12,9 @@ from __future__ import annotations
 
 import json
 import os
+from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 from pathlib import Path
-from typing import AsyncIterator
 
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import StreamingResponse
@@ -111,9 +111,7 @@ def create_app(corpus_dir: str | Path | None = None) -> FastAPI:
         if body.session_id not in state.bot.memory.session_ids():
             raise HTTPException(status_code=404, detail="unknown session_id")
         state.feedback.append(
-            FeedbackEvent(
-                session_id=body.session_id, helpful=body.helpful, note=body.note
-            )
+            FeedbackEvent(session_id=body.session_id, helpful=body.helpful, note=body.note)
         )
         return {"recorded": True, "total": len(state.feedback)}
 
